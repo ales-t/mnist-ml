@@ -32,11 +32,11 @@ class MNISTModel(object):
     
         # first convolution layer
         h_conv1 = MNISTModel._conv_layer(x_image, 5, 1, 32)
-        h_pool1 = MNISTModel._max_pool_2x2(h_conv1)
+        h_pool1 = MNISTModel._max_pool(h_conv1, 2, 2)
     
         # second convolution layer
         h_conv2 = MNISTModel._conv_layer(h_pool1, 5, 32, 64)
-        h_pool2 = MNISTModel._max_pool_2x2(h_conv2)
+        h_pool2 = MNISTModel._max_pool(h_conv2, 2, 2)
     
         # fully connected layer
         W_fc1 = MNISTModel._weight_variable([7 * 7 * 64, 1024])
@@ -63,35 +63,50 @@ class MNISTModel(object):
 
         x = tf.placeholder(tf.float32, shape=[None, input_dim])
         y_ = tf.placeholder(tf.float32, shape=[None, output_dim])
+        use_dropout = tf.placeholder(tf.float32)
 
-        x_image = tf.reshape(x_rescaled, [-1, 28, 28, 1])
+        x_image = tf.reshape(x, [-1, 28, 28, 1])
+
+        # drop-out input
+        x_drop = tf.nn.dropout(x_image, 1 - use_dropout * 0.2)
+
+        # first (standard) convolution layer
+        h_conv1 = MNISTModel._conv_layer(x_image, 5, 1, 32, padding='VALID')
     
-        # first convolution layer
-        h_conv1 = MNISTModel._conv_layer(x_image, 5, 1, 32)
-        h_pool1 = MNISTModel._max_pool_2x2(h_conv1)
-    
-        # second convolution layer
-        h_conv2 = MNISTModel._conv_layer(h_conv1, 5, 32, 64)
-        h_pool2 = MNISTModel._max_pool_2x2(h_conv2)
-    
-        # fully connected layer
-        W_fc1 = MNISTModel._weight_variable([7 * 7 * 64, 1024])
-        b_fc1 = MNISTModel._bias_variable([1024])
-    
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
-        h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
-    
-        # drop-out from the fully connected layer
-        keep_prob = tf.placeholder(tf.float32)
-        h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
-    
+        # highway CNN layers
+        h_conv2 = MNISTModel._highway_conv_layer(h_conv1, 24, 3, 32, 32)
+        h_conv3 = MNISTModel._highway_conv_layer(h_conv2, 24, 3, 32, 32)
+
+        # max pool
+        h_pool1 = MNISTModel._max_pool(h_conv3, size=3, stride=2)
+        pool1_drop = tf.nn.dropout(h_pool1, 1 - use_dropout * 0.3)
+
+        # highway CNN layers
+        h_conv4 = MNISTModel._highway_conv_layer(pool1_drop, 12, 3, 32, 32)
+        h_conv5 = MNISTModel._highway_conv_layer(h_conv4, 12, 3, 32, 32)
+        h_conv6 = MNISTModel._highway_conv_layer(h_conv5, 12, 3, 32, 32)
+
+        # max pool
+        h_pool2 = MNISTModel._max_pool(h_conv6, size=3, stride=2)
+        pool2_drop = tf.nn.dropout(h_pool2, 1 - use_dropout * 0.4)
+
+        # highway CNN layers
+        h_conv7 = MNISTModel._highway_conv_layer(pool2_drop, 6, 3, 32, 32)
+        h_conv8 = MNISTModel._highway_conv_layer(h_conv7, 6, 3, 32, 32)
+        h_conv9 = MNISTModel._highway_conv_layer(h_conv8, 6, 3, 32, 32)
+
+        # max pool
+        h_pool3 = MNISTModel._max_pool(h_conv9, size=2, stride=2)
+        pool3_drop = tf.nn.dropout(h_pool3, 1 - use_dropout * 0.5)
+        pool3_drop_flat = tf.reshape(pool3_drop, [-1, 3 * 3 * 32])
+
         # final (readout) layer
-        W_fc2 = MNISTModel._weight_variable([1024, output_dim])
+        W_fc2 = MNISTModel._weight_variable([3 * 3 * 32, output_dim])
         b_fc2 = MNISTModel._bias_variable([output_dim])
     
-        y = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+        y = tf.matmul(pool3_drop_flat, W_fc2) + b_fc2
 
-        return { 'x': x, 'y': y, 'y_': y_, 'keep_prob': keep_prob }
+        return { 'x': x, 'y': y, 'y_': y_, 'use_dropout': use_dropout }
 
     def train(self, session):
         xent = tf.nn.softmax_cross_entropy_with_logits(labels=self._vars['y_'], logits=self._vars['y'])
@@ -143,25 +158,33 @@ class MNISTModel(object):
         return tf.Variable(initial)
 
     @staticmethod
-    def _conv_layer(x, filter_size, in_filters, out_filters, nonlinearity=tf.nn.relu):
+    def _conv_layer(x, filter_size, in_filters, out_filters, nonlinearity=tf.nn.relu, padding='SAME'):
         W = MNISTModel._weight_variable([filter_size, filter_size, in_filters, out_filters])
         b = MNISTModel._bias_variable([out_filters])
-        conv = tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+        conv = tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding=padding)
     
         return nonlinearity(conv + b)
     
     @staticmethod
-    def _max_pool_2x2(x):
-        return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+    def _max_pool(x, size, stride):
+        return tf.nn.max_pool(x, 
+                              ksize=[1, size, size, 1], 
+                              strides=[1, stride, stride, 1], padding='SAME')
 
     @staticmethod
-    def _highway_layer(x, size, activation, gate_bias=-1.0):
-        W = MNISTModel._weight_variable([size, size])
+    def _highway_conv_layer(x, size, filter_size, in_filters, out_filters, gate_bias=-1.0):
+        conv = MNISTModel._conv_layer(x, filter_size, in_filters, out_filters)
+        conv_flat = tf.reshape(conv, [-1, size * size * out_filters])
+        x_flat = tf.reshape(x, [-1, size * size * in_filters])
+        highway = MNISTModel._highway_layer(x_flat, size * size * out_filters, conv_flat, gate_bias)
+        return tf.reshape(highway, [-1, size, size, out_filters])
+
+    @staticmethod
+    def _highway_layer(x, size, activation, gate_bias):
+        W_t = MNISTModel._weight_variable([size, size])
         # use negative bias for transform gates
-        b = MNISTModel._bias_variable([size], init=gate_bias)
+        b_t = MNISTModel._bias_variable([size], init=gate_bias)
     
         g = tf.nn.sigmoid(tf.matmul(x, W_t) + b_t)
     
-        nonlinear = activation(x)
-    
-        return tf.multiply(g, nonlinear) + tf.multiply(1 - g, x)
+        return tf.multiply(g, activation) + tf.multiply(1 - g, x)
