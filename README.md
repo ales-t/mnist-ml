@@ -59,7 +59,7 @@ There are two basic model types which are described below.
 
 ### Basic CNN
 
-This model is implemented based on [TensorFlow tutorial on
+This model is based on [TensorFlow tutorial on
 MNIST](https://www.tensorflow.org/get_started/mnist/pros). It is a two-layer
 convolutional neural network with drop-out, followed by a fully connected layer
 of size 1024 and finally by a read-out layer (softmax which predicts the
