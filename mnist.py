@@ -7,7 +7,7 @@ import os
 from tensorflow.examples.tutorials.mnist import input_data
 
 class MNISTModel(object):
-    """Train and evaluate deep learning models on the MNIST datasets."""
+    """Train and evaluate deep learning models on the MNIST dataset."""
 
     def __init__(self, batch_size, batches, model_type, quiet):
         self._batch_size = batch_size
@@ -76,7 +76,6 @@ class MNISTModel(object):
         # final (readout) layer
         W_fc2 = MNISTModel._weight_variable([1024, output_dim])
         b_fc2 = MNISTModel._bias_variable([output_dim])
-    
 
         # y contains logits of the possible labels
         y = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
@@ -250,5 +249,4 @@ class MNISTModel(object):
         # gate values
         g = tf.nn.sigmoid(tf.matmul(x, W_t) + b_t)
     
-        # 
         return tf.multiply(g, activation) + tf.multiply(1 - g, x)
