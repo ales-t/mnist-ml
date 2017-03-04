@@ -106,6 +106,8 @@ class MNISTModel(object):
         h_conv1 = MNISTModel._conv_layer(x_drop, 5, 1, 16, padding='VALID')
     
         # highway CNN layers, no max pooling
+        # our image after first conv layer is 24x24 (no padding was done),
+        # our filter size is 3 and we have a bank of 16 filters on each layer
         h_conv2 = MNISTModel._highway_conv_layer(h_conv1, 24, 3, 16)
         h_conv3 = MNISTModel._highway_conv_layer(h_conv2, 24, 3, 16)
 
