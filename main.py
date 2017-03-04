@@ -13,9 +13,9 @@ def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch-size", type=int, default=50, help="batch size")
     parser.add_argument("--batches", type=int, default=20000, help="total number of batches")
-    parser.add_argument("--drop-out-prob", type=float, default=0.5, help="drop-out probability, 0 to disable")
-    parser.add_argument("--device", default="cpu:0", help="device to run on")
     parser.add_argument("--max-cpu-cores", type=int, default=1, help="how many cores to use at most")
+    parser.add_argument("--model-type", type=str, default="basic_cnn", 
+                        help="which model (basic_cnn, highway_cnn)")
 
     args = parser.parse_args()
 
@@ -24,7 +24,7 @@ def main(args):
     model = MNISTModel(
         batch_size=args.batch_size, 
         batches=args.batches, 
-        dropout_prob=args.drop_out_prob)
+        model_type=args.model_type)
 
     session = tf.Session(config=tf.ConfigProto(inter_op_parallelism_threads=args.max_cpu_cores,
                          intra_op_parallelism_threads=args.max_cpu_cores))
