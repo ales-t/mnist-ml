@@ -29,8 +29,10 @@ def main(args):
     session = tf.Session(config=tf.ConfigProto(inter_op_parallelism_threads=args.max_cpu_cores,
                          intra_op_parallelism_threads=args.max_cpu_cores))
 
+    logging.info("Training started.")
     model.train(session)
-    print("ACCURACY=" + str(model.eval(session)))
+    logging.info("Training finished.")
+    print(model.eval(session))
 
 if __name__ == "__main__":
     main(sys.argv)

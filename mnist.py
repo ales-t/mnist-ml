@@ -7,6 +7,7 @@ import os
 from tensorflow.examples.tutorials.mnist import input_data
 
 class MNISTModel(object):
+    """Train and evaluate deep learning models on the MNIST datasets."""
 
     def __init__(self, batch_size, batches, model_type):
         self._batch_size = batch_size
@@ -71,37 +72,37 @@ class MNISTModel(object):
         x_drop = tf.nn.dropout(x_image, 1 - use_dropout * 0.2)
 
         # first (standard) convolution layer
-        h_conv1 = MNISTModel._conv_layer(x_image, 5, 1, 32, padding='VALID')
+        h_conv1 = MNISTModel._conv_layer(x_image, 5, 1, 16, padding='VALID')
     
         # highway CNN layers
-        h_conv2 = MNISTModel._highway_conv_layer(h_conv1, 24, 3, 32, 32)
-        h_conv3 = MNISTModel._highway_conv_layer(h_conv2, 24, 3, 32, 32)
+        h_conv2 = MNISTModel._highway_conv_layer(h_conv1, 24, 3, 16, 16)
+        h_conv3 = MNISTModel._highway_conv_layer(h_conv2, 24, 3, 16, 16)
 
         # max pool
         h_pool1 = MNISTModel._max_pool(h_conv3, size=3, stride=2)
         pool1_drop = tf.nn.dropout(h_pool1, 1 - use_dropout * 0.3)
 
         # highway CNN layers
-        h_conv4 = MNISTModel._highway_conv_layer(pool1_drop, 12, 3, 32, 32)
-        h_conv5 = MNISTModel._highway_conv_layer(h_conv4, 12, 3, 32, 32)
-        h_conv6 = MNISTModel._highway_conv_layer(h_conv5, 12, 3, 32, 32)
+        h_conv4 = MNISTModel._highway_conv_layer(pool1_drop, 12, 3, 16, 16)
+        h_conv5 = MNISTModel._highway_conv_layer(h_conv4, 12, 3, 16, 16)
+        h_conv6 = MNISTModel._highway_conv_layer(h_conv5, 12, 3, 16, 16)
 
         # max pool
         h_pool2 = MNISTModel._max_pool(h_conv6, size=3, stride=2)
         pool2_drop = tf.nn.dropout(h_pool2, 1 - use_dropout * 0.4)
 
         # highway CNN layers
-        h_conv7 = MNISTModel._highway_conv_layer(pool2_drop, 6, 3, 32, 32)
-        h_conv8 = MNISTModel._highway_conv_layer(h_conv7, 6, 3, 32, 32)
-        h_conv9 = MNISTModel._highway_conv_layer(h_conv8, 6, 3, 32, 32)
+        h_conv7 = MNISTModel._highway_conv_layer(pool2_drop, 6, 3, 16, 16)
+        h_conv8 = MNISTModel._highway_conv_layer(h_conv7, 6, 3, 16, 16)
+        h_conv9 = MNISTModel._highway_conv_layer(h_conv8, 6, 3, 16, 16)
 
         # max pool
         h_pool3 = MNISTModel._max_pool(h_conv9, size=2, stride=2)
         pool3_drop = tf.nn.dropout(h_pool3, 1 - use_dropout * 0.5)
-        pool3_drop_flat = tf.reshape(pool3_drop, [-1, 3 * 3 * 32])
+        pool3_drop_flat = tf.reshape(pool3_drop, [-1, 3 * 3 * 16])
 
         # final (readout) layer
-        W_fc2 = MNISTModel._weight_variable([3 * 3 * 32, output_dim])
+        W_fc2 = MNISTModel._weight_variable([3 * 3 * 16, output_dim])
         b_fc2 = MNISTModel._bias_variable([output_dim])
     
         y = tf.matmul(pool3_drop_flat, W_fc2) + b_fc2
