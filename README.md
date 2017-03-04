@@ -29,7 +29,8 @@ You can obtain the full command synopsis by running `python3 main.py --help`:
 
 ```
 usage: main.py [-h] [--model-type MODEL_TYPE] [--batch-size BATCH_SIZE]
-               [--batches BATCHES] [--max-cpu-cores MAX_CPU_CORES] [--quiet]
+               [--batches BATCHES] [--max-cpu-cores MAX_CPU_CORES]
+               [--device DEVICE] [--quiet]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -40,6 +41,7 @@ optional arguments:
   --batches BATCHES     total number of batches
   --max-cpu-cores MAX_CPU_CORES
                         how many cores to use at most
+  --device DEVICE       which device to run on
   --quiet               be quiet
 ```
 
@@ -90,5 +92,6 @@ some degree, mixed with the output of the current layer. This modification is
 fairly easy to implement and at the same time allows to reach (nearly)
 state-of-the-art results.
 
-This model is considerably slower to train. After 1000 batches of size 70, its
-accuracy is around 97.5.
+This model is considerably slower to train and may require more batches to
+converge. It achieved accuracy of 98.97 after 20000 batches (i.e. slightly lower
+than the basic model).
