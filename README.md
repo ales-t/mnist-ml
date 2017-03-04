@@ -1,6 +1,8 @@
 mnist-ml
 ========
 
+Train and evaluate deep learning models on the MNIST dataset.
+
 Pre-requisites
 --------------
 
@@ -93,5 +95,6 @@ fairly easy to implement and at the same time allows to reach (nearly)
 state-of-the-art results.
 
 This model is considerably slower to train and may require more batches to
-converge. It achieved accuracy of 98.97 after 20000 batches (i.e. slightly lower
+converge, or a more careful initialization and hyperparameter settings.
+It achieved accuracy of 98.97 after 20000 batches (i.e. slightly lower
 than the basic model).
