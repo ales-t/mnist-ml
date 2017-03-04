@@ -12,6 +12,9 @@ with pip:
 
 `pip install --upgrade tensorflow`
 
+Since version 1.0, TensorFlow is available both for Linux and Windows. This code
+was tested on Ubuntu 16.04 (GPU and CPU) and Windows 10 (CPU).
+
 How to run
 ----------
 
