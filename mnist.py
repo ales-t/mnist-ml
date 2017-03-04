@@ -31,17 +31,11 @@ class MNISTModel(object):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
     
         # first convolution layer
-        W_conv1 = MNISTModel._weight_variable([5, 5, 1, 32])
-        b_conv1 = MNISTModel._bias_variable([32])
-    
-        h_conv1 = tf.nn.relu(MNISTModel._conv2d(x_image, W_conv1) + b_conv1)
+        h_conv1 = MNISTModel._conv_layer(x_image, 5, 1, 32)
         h_pool1 = MNISTModel._max_pool_2x2(h_conv1)
     
         # second convolution layer
-        W_conv2 = MNISTModel._weight_variable([5, 5, 32, 64])
-        b_conv2 = MNISTModel._bias_variable([64])
-    
-        h_conv2 = tf.nn.relu(MNISTModel._conv2d(h_pool1, W_conv2) + b_conv2)
+        h_conv2 = MNISTModel._conv_layer(h_pool1, 5, 32, 64)
         h_pool2 = MNISTModel._max_pool_2x2(h_conv2)
     
         # fully connected layer
@@ -73,17 +67,11 @@ class MNISTModel(object):
         x_image = tf.reshape(x_rescaled, [-1, 28, 28, 1])
     
         # first convolution layer
-        W_conv1 = MNISTModel._weight_variable([5, 5, 1, 32])
-        b_conv1 = MNISTModel._bias_variable([32])
-    
-        h_conv1 = tf.nn.relu(MNISTModel._conv2d(x_image, W_conv1) + b_conv1)
+        h_conv1 = MNISTModel._conv_layer(x_image, 5, 1, 32)
         h_pool1 = MNISTModel._max_pool_2x2(h_conv1)
     
         # second convolution layer
-        W_conv2 = MNISTModel._weight_variable([5, 5, 32, 64])
-        b_conv2 = MNISTModel._bias_variable([64])
-    
-        h_conv2 = tf.nn.relu(MNISTModel._conv2d(h_pool1, W_conv2) + b_conv2)
+        h_conv2 = MNISTModel._conv_layer(h_conv1, 5, 32, 64)
         h_pool2 = MNISTModel._max_pool_2x2(h_conv2)
     
         # fully connected layer
@@ -153,10 +141,14 @@ class MNISTModel(object):
     def _bias_variable(shape, init=0.1):
         initial = tf.constant(init, shape=shape)
         return tf.Variable(initial)
-    
+
     @staticmethod
-    def _conv2d(x, W):
-        return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+    def _conv_layer(x, filter_size, in_filters, out_filters, nonlinearity=tf.nn.relu):
+        W = MNISTModel._weight_variable([filter_size, filter_size, in_filters, out_filters])
+        b = MNISTModel._bias_variable([out_filters])
+        conv = tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+    
+        return nonlinearity(conv + b)
     
     @staticmethod
     def _max_pool_2x2(x):
