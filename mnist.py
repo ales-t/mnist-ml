@@ -103,7 +103,7 @@ class MNISTModel(object):
         x_drop = tf.nn.dropout(x_image, 1 - use_dropout * 0.2)
 
         # first (standard) convolution layer, no padding
-        h_conv1 = MNISTModel._conv_layer(x_image, 5, 1, 16, padding='VALID')
+        h_conv1 = MNISTModel._conv_layer(x_drop, 5, 1, 16, padding='VALID')
     
         # highway CNN layers, no max pooling
         h_conv2 = MNISTModel._highway_conv_layer(h_conv1, 24, 3, 16)
