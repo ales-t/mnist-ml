@@ -81,5 +81,11 @@ implementation available:
 
 <https://github.com/flukeskywalker/highway-networks/blob/master/examples/highways/mnist-10layers/mnist_network.prototxt>
 
+Highway networks were proposed to enable training of very deep models. Highway
+network layers contains soft gates which allow their input to pass through to
+some degree, mixed with the output of the current layer. This modification is
+fairly easy to implement and at the same time allows to reach (nearly)
+state-of-the-art results.
+
 This model is considerably slower to train. After 1000 batches of size 70, its
 accuracy is around 97.5.
